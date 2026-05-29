@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Avaliação Física e Anamnese - Academia Pro</title>
+
+    <style>
+        /* O bloco <style> guarda o CSS, responsável pelo design, cores e layout do site */
+
+        :root {
+            /* Variáveis de cores para facilitar a manutenção visual do projeto */
+            --primary: #4f46e5;
+            /* Roxo moderno para os botões principais */
+            --primary-hover: #4338ca;
+            /* Roxo escuro usado no efeito de passar o mouse */
+            --background: #f3f4f6;
+            /* Cinza claro para o fundo da tela */
+            --card-bg: #ffffff;
+            /* Branco para o fundo dos blocos (cards) */
+            --text-main: #1f2937;
+            /* Cinza quase preto para textos importantes */
+            --text-muted: #6b7280;
+            /* Cinza médio para textos secundários */
+
+            /* Cores dos blocos de acordo com a faixa do IMC */
+            --abaixo: #3b82f6;
+            /* Azul */
+            --normal: #10b981;
+            /* Verde */
+            --sobrepeso: #f59e0b;
+            /* Laranja */
+            --obesidade: #ef4444;
+            /* Vermelho */
+        }
+
+        body {
+            /* Estiliza o corpo inteiro da página */
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            /* Define uma fonte limpa */
+            background-color: var(--background);
+            /* Aplica o fundo cinza claro */
+            color: var(--text-main);
+            /* Aplica a cor padrão das letras */
+            margin: 0;
+            /* Remove margens padrão */
+            padding: 20px;
+            /* Espaçamento interno de segurança nas bordas */
+            display: flex;
+            /* Liga o motor Flexbox de alinhamento */
+            justify-content: center;
+            /* Centraliza o conteúdo na horizontal */
+            align-items: center;
+            /* Centraliza o conteúdo na vertical */
+            min-height: 100vh;
+            /* Ocupa toda a altura visível da tela */
+        }
+
+        .app-container {
+            /* Caixa master que segura os três cards juntos */
+            display: grid;
+            /* Ativa o modo Grid (divisão em colunas/redes) */
+            grid-template-columns: 1fr;
+            /* Em celulares, todos os blocos ficam em 1 única coluna vertical */
+            gap: 20px;
+            /* Distância de 20px entre os blocos (cards) */
+            width: 100%;
+            /* Ocupa o máximo de largura disponível */
+            max-width: 1200px;
+            /* Ajustado para 1200px para acomodar os novos recursos de busca */
+        }
+
+        @media (min-width: 992px) {
+
+            /* Se a tela for maior que 992px (computadores e tablets grandes): */
+            .app-container {
+                grid-template-columns: 1fr 1.2fr 1.1fr;
+                /* Divide em 3 colunas proporcionais para a tela */
+            }
+        }
+
+        .card {
+            /* Estilo dos blocos brancos (cards) */
+            background: var(--card-bg);
+            /* Fundo branco */
+            padding: 25px;
+            /* Espaço interno para afastar o conteúdo das bordas */
+            border-radius: 16px;
+            /* Arredonda os cantos do bloco */
+            position: relative;
+            /* Permite posicionar elementos filhos de forma absoluta dentro dele */
+            /* Efeito de sombra suave para dar sensação de flutuação */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .btn-privacidade {
+            /* Botão redondo do olho do Modo Privado */
+            position: absolute;
+            /* Desprende o botão do fluxo comum para posicioná-lo livremente */
+            top: 20px;
+            /* Distância de 20px do topo do card */
+            right: 20px;
+            /* Distância de 20px da borda direita do card */
+            background: #e5e7eb;
+            /* Fundo cinza clarinho */
+            border: none;
+            /* Sem bordas */
+            width: 36px;
+            /* Largura do botão */
+            height: 36px;
+            /* Altura do botão */
+            border-radius: 50%;
+            /* Força o botão a virar um círculo perfeito */
+            font-size: 16px;
+            /* Tamanho do emoji de olho dentro dele */
+            display: flex;
+            /* Ativa flexbox interno */
+            align-items: center;
+            /* Centraliza o emoji verticalmente */
+            justify-content: center;
+            /* Centraliza o emoji horizontalmente */
+            cursor: pointer;
+            /* Muda o cursor para a mãozinha de clique */
+            transition: background 0.2s, transform 0.1s;
+            /* Transição suave de efeitos */
+        }
+
+        .btn-privacidade:hover {
+            background: #d1d5db;
+            /* Cinza um pouco mais escuro ao passar o mouse */
+        }
+
+        .btn-privacidade:active {
+            transform: scale(0.95);
+            /* Encolhe levemente ao ser clicado */
+        }
+
+        h2,
+        h3 {
+            margin-top: 0;
+            color: var(--text-main);
+            padding-right: 40px;
+            /* Abre espaço na direita para o título não bater no botão do olho */
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+            /* Distância padrão dos campos */
+        }
+
+        .input-row {
+            /* Permite colocar dois campos menores na mesma linha (ex: Idade e Telefone) */
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            /* Idade ocupa 1 parte e Telefone ocupa 2 partes da largura */
+            gap: 10px;
+            /* Espaçamento de 10px entre os dois campos lado a lado */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .input-field,
+        .select-field,
+        .textarea-field {
+            /* Caixa de texto, seletores e campos de mensagem */
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #ffffff;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+            font-family: inherit;
+            /* Herda a mesma fonte do projeto */
+        }
+
+        .textarea-field {
+            resize: vertical;
+            /* Permite ao usuário esticar a caixa apenas para baixo */
+            height: 60px;
+            /* Altura inicial padronizada */
+        }
+
+        .input-field:focus,
+        .select-field:focus,
+        .textarea-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            /* Borda fica roxa ao clicar na caixa para digitar */
+        }
+
+        .btn-acao {
+            /* Botões principais de clique do sistema */
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: auto;
+            /* Empurra o botão sempre para o final do bloco */
+        }
+
+        .btn-acao:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-acao:active {
+            transform: scale(0.98);
+        }
+
+        .result-box {
+            /* Caixa onde o resultado do IMC aparece (Começa oculta) */
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .result-content {
+            /* Alinha o boneco e as notas lado a lado no centro */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .avatar-display {
+            /* Estilo do Bonequinho grande */
+            font-size: 56px;
+            line-height: 1;
+            animation: bounce 0.5s ease-in-out alternate infinite;
+            /* Faz o boneco pular */
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-value {
+            /* Número grande do IMC */
+            font-size: 32px;
+            font-weight: 800;
+            margin: 4px 0;
+        }
+
+        .badge {
+            /* Etiqueta colorida (Ex: PESO IDEAL) */
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 50px;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        /* NOVO: Estilos do painel de filtros profissionais do histórico */
+        .filter-container {
+            background: #f9fafb;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .history-list {
+            /* Lista do histórico lateral */
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 380px;
+            /* Reduzido levemente para caber os filtros acima */
+            overflow-y: auto;
+            /* Cria barra de rolagem se passar de muitos itens */
+        }
+
+        .history-item {
+            /* Linha do histórico */
+            display: flex;
+            flex-direction: column;
+            /* Organiza os textos em bloco empilhado */
+            gap: 4px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+            /* Tira a linha divisória do último item */
+        }
+
+        .history-header {
+            /* Cabeçalho da linha do histórico (Alinha boneco e data nas pontas) */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-details {
+            /* Textos menores com os dados da avaliação física no histórico */
+            font-size: 12px;
+            color: var(--text-muted);
+            background-color: #f9fafb;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .clear-btn {
+            /* Botão invisível de limpar histórico */
+            background: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            padding: 5px;
+            width: auto;
+            margin-top: 15px;
+            text-decoration: underline;
+            cursor: pointer;
+            border: none;
+        }
+
+        .clear-btn:hover {
+            color: #ef4444;
+            /* Fica vermelho no hover */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <div class="card"> <button id="btnPrivado" class="btn-privacidade" onclick="alternarModoPrivado()"
+                title="Alternar Modo Privado">👁️</button>
+
+            <h2>Calculadora de IMC</h2>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Insira seus dados básicos para o cálculo do IMC.
+            </p>
+
+            <div class="input-group">
+                <label for="peso">Seu Peso (kg)</label>
+                <input type="number" id="peso" class="input-field" step="0.1" placeholder="Ex: 75.4">
+            </div>
+
+            <div class="input-group">
+                <label for="altura">Sua Altura (m)</label>
+                <input type="number" id="altura" class="input-field" step="0.01" placeholder="Ex: 1.78">
+            </div>
+
+            <div id="resultBox" class="result-box">
+                <span id="resultBadge" class="badge">Normal</span>
+
+                <div class="result-content">
+                    <div id="resultAvatar" class="avatar-display"></div>
+
+                    <div>
+                        <div id="resultValue" class="result-value"></div>
+                        <p id="resultText" style="margin: 0; color: var(--text-muted); font-size: 13px;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>Ficha do Aluno</h3>
+            <p style="color: var(--text-muted); margin-bottom: 25px;">Dados de contato e metas para prescrição do
+                treino.</p>
+
+            <div class="input-group">
+                <label for="nome">Nome Completo do Aluno</label>
+                <input type="text" id="nome" class="input-field" placeholder="Ex: João Silva Sauro">
+            </div>
+
+            <div class="input-row">
+                <div class="input-group">
+                    <label for="idade">Idade</label>
+                    <input type="number" id="idade" class="input-field" placeholder="Ex: 26">
+                </div>
+                <div class="input-group">
+                    <label for="telefone">WhatsApp / Contato</label>
+                    <input type="tel" id="telefone" class="input-field" placeholder="Ex: (41) 99999-9999">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="objetivo">Objetivo Principal</label>
+                <select id="objetivo" class="select-field">
+                    <option value="Hipertrofia">Ganhar Massa Magra (Hipertrofia)</option>
+                    <option value="Emagrecimento">Perder Peso (Emagrecimento)</option>
+                    <option value="Condicionamento">Melhorar Fôlego (Condicionamento)</option>
+                    <option value="Força">Aumento de Força Bruta</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="frequencia">Nível de Atividade Atual</label>
+                <select id="frequencia" class="select-field">
+                    <option value="Sedentário">Sedentário (Pouco ou nenhum exercício)</option>
+                    <option value="Moderado">Moderado (Treina 1 a 3 vezes por semana)</option>
+                    <option value="Intenso">Intenso (Treina 4 a 7 vezes por semana)</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 20px;">
+                <label for="restricoes">Lesões, dores ou restrições médicas?</label>
+                <textarea id="restricoes" class="textarea-field"
+                    placeholder="Ex: Dor lombar ou nenhuma restrição..."></textarea>
+            </div>
+
+            <button class="btn-acao" onclick="processarFichaCompleta()">Calcular e Registrar Aluno</button>
+        </div>
+        <div class="card" style="justify-content: space-between;">
+            <div>
+                <h3>Fichas Cadastradas</h3>
+
+                <div class="filter-container">
+                    <input type="text" id="buscaNome" class="input-field"
+                        placeholder="🔍 Pesquisar por nome do aluno..." oninput="atualizarTelaHistorico()">
+
+                    <select id="filtroObjetivo" class="select-field" onchange="atualizarTelaHistorico()">
+                        <option value="Todos">🎯 Filtrar por Objetivo: Todos</option>
+                        <option value="Hipertrofia">Hipertrofia</option>
+                        <option value="Emagrecimento">Emagrecimento</option>
+                        <option value="Condicionamento">Condicionamento</option>
+                        <option value="Força">Força</option>
+                    </select>
+                </div>
+
+                <ul id="historyList" class="history-list"></ul>
+            </div>
+            <button onclick="limparHistorico()" class="clear-btn">Limpar histórico de fichas</button>
+        </div>
+    </div>
+    <script>
+        /* Dicionário centralizando as informações visuais de retorno do IMC */
+        const dadosIMC = {
+            abaixo: { texto: "Abaixo do peso", cor: "var(--abaixo)", msg: "Considere consultar um nutricionista.", avatar: "🧍‍♂️" },
+            normal: { texto: "Peso ideal", cor: "var(--normal)", msg: "Excelente! Mantenha seus bons hábitos.", avatar: "💪" },
+            sobrepeso: { texto: "Sobrepeso", cor: "var(--sobrepeso)", msg: "Atenção com a alimentação e exercícios.", avatar: "🏃‍♂️" },
+            obesidade: { texto: "Obesidade", cor: "var(--obesidade)", msg: "É importante buscar orientação médica.", avatar: "🚶‍♂️" }
+        };
+
+        /* Variável global de controle de ativação do Modo Privado */
+        let modoPrivadoAtivo = false;
+
+        /* Variáveis globais para reter na memória volátil o último cálculo do IMC */
+        let ultimoImcCalculado = null;
+        let ultimaClassificacaoCalculada = null;
+
+        /* Roda automaticamente assim que o navegador monta 100% da página */
+        window.onload = function () {
+            atualizarTelaHistorico(); // Desenha a lista de históricos gravada no sistema
+        };
+
+        /* Função que liga e desliga o Modo Privado e mascara as informações visuais da tela */
+        function alternarModoPrivado() {
+            modoPrivadoAtivo = !modoPrivadoAtivo; // Inverte o valor lógico (true/false)
+
+            const inputPeso = document.getElementById('peso');
+            const inputAltura = document.getElementById('altura');
+            const botaoOlho = document.getElementById('btnPrivado');
+
+            if (modoPrivadoAtivo) {
+                inputPeso.type = "password";   // Oculta os números do peso transformando a caixa em formato senha
+                inputAltura.type = "password"; // Oculta os números da altura transformando a caixa em formato senha
+                botaoOlho.innerText = "🙈";    // Atualiza o ícone do botão
+            } else {
+                inputPeso.type = "number";     // Restaura a caixa de peso para o modo visível numérico
+                inputAltura.type = "number";   // Restaura a caixa de altura para o modo numérico
+                botaoOlho.innerText = "👁️";    // Restaura o ícone do botão
+            }
+
+            // Se já tiver uma caixa de resposta de IMC ativa, atualiza ela com a máscara de privacidade
+            if (ultimoImcCalculado !== null) {
+                exibirResultado(ultimoImcCalculado, ultimaClassificacaoCalculada);
+            }
+
+            atualizarTelaHistorico(); // Força a atualização do histórico lateral para mascarar os IMCs salvos
+        }
+
+        /* Nova função unificada que processa o IMC e adiciona as informações de Cadastro e Treino */
+        function processarFichaCompleta() {
+            const peso = parseFloat(document.getElementById('peso').value);
+            const altura = parseFloat(document.getElementById('altura').value);
+
+            // CAPTURA DOS CAMPOS CADASTRAIS: Nome, Idade e Telefone
+            const nome = document.getElementById('nome').value.trim() || "Aluno Anônimo";
+            const idadeInput = document.getElementById('idade').value;
+            const idade = idadeInput ? parseInt(idadeInput) : 0;
+            const telefone = document.getElementById('telefone').value.trim() || "Não informado";
+
+            // CAPTURA DOS CAMPOS DE METAS: Pega os dados selecionados na ficha de objetivos
+            const objetivo = document.getElementById('objetivo').value;
+            const frequencia = document.getElementById('frequencia').value;
+            const restricoes = document.getElementById('restricoes').value.trim() || "Nenhuma informada";
+
+            // Validação das caixas numéricas obrigatórias do IMC
+            if (!peso || !altura || peso <= 0 || altura <= 0) {
+                alert("Por favor, preencha o seu peso e altura para calcular o IMC!");
+                return;
+            }
+
+            const imc = peso / (altura * altura); // Executa a equação matemática do IMC
+            const classificacao = obterClassificacao(imc); // Descobre o status correspondente
+
+            // NOVO RECURSO PROFISSIONAL: Calcula a Frequência Cardíaca Alvo para treinos de Cardio baseada na Idade
+            let batimentosAlvo = "Adicione a idade para ver";
+            if (idade > 0) {
+                const fcMaxima = 220 - idade; // Fórmula padrão de FC Máxima teórica
+                // Define faixas de intensidade com base no objetivo esportivo selecionado
+                if (objetivo === "Emagrecimento") {
+                    batimentosAlvo = `${Math.round(fcMaxima * 0.6)} a ${Math.round(fcMaxima * 0.7)} BPM (Zona de Queima de Gordura)`;
+                } else if (objetivo === "Condicionamento") {
+                    batimentosAlvo = `${Math.round(fcMaxima * 0.7)} a ${Math.round(fcMaxima * 0.85)} BPM (Zona Aeróbica de Resistência)`;
+                } else {
+                    batimentosAlvo = `${Math.round(fcMaxima * 0.5)} a ${Math.round(fcMaxima * 0.65)} BPM (Zona de Manutenção/Atividade Moderada)`;
+                }
+            }
+
+            ultimoImcCalculado = imc;
+            ultimaClassificacaoCalculada = classificacao;
+
+            exibirResultado(imc, classificacao); // Atualiza o bloco de resposta principal da calculadora
+
+            // PASSA DADOS EXPANDIDOS: Envia o IMC mais todas as respostas cadastrais, metas e a zona de batimentos cardíacos alvo
+            salvarNoHistorico(imc, classificacao, nome, idade, telefone, objetivo, frequencia, restricoes, batimentosAlvo);
+        }
+
+        /* Confere o número do IMC e devolve a categoria correta do dicionário dadosIMC */
+        function obterClassificacao(imc) {
+            if (imc < 18.5) return dadosIMC.abaixo;
+            if (imc < 25) return dadosIMC.normal;
+            if (imc < 30) return dadosIMC.sobrepeso;
+            return dadosIMC.obesidade;
+        }
+
+        /* Atualiza o HTML e as propriedades CSS do painel de respostas e do bonequinho */
+        function exibirResultado(imc, classe) {
+            const box = document.getElementById('resultBox');
+            const badge = document.getElementById('resultBadge');
+            const value = document.getElementById('resultValue');
+            const text = document.getElementById('resultText');
+            const avatar = document.getElementById('resultAvatar');
+
+            box.style.display = "block"; // Faz a caixa cinza surgir na tela
+            box.style.backgroundColor = classe.cor + "15"; // Aplica cor de fundo transparente da categoria
+
+            badge.style.backgroundColor = classe.cor;
+            badge.innerText = classe.texto;
+            text.innerText = classe.msg;
+            avatar.innerText = classe.avatar; // Altera o boneco (emoji) na interface gráfica
+
+            if (modoPrivadoAtivo) {
+                value.innerText = "*,*"; // Se a privacidade estiver ativa, joga a máscara ocultando o número
+                value.style.color = "var(--text-muted)";
+            } else {
+                value.innerText = imc.toFixed(1); // Se público, mostra o número com uma casa decimal
+                value.style.color = classe.cor;
+            }
+        }
+
+        // ================= SISTEMA DE HISTÓRICO ACADEMIA (LOCALSTORAGE) =================
+
+        /* Salva a estrutura de ficha de matrícula completa do aluno, incluindo a nova zona de batimentos cardíacos */
+        function salvarNoHistorico(imc, classe, nome, idade, telefone, objetivo, frequencia, restricoes, batimentosAlvo) {
+            let historico = JSON.parse(localStorage.getItem('historicoProAcademia')) || [];
+
+            const novoItem = {
+                imc: imc.toFixed(1),
+                status: classe.texto,
+                avatar: classe.avatar,
+                nome: nome,
+                idade: idade > 0 ? `${idade} anos` : "Não informada",
+                telefone: telefone,
+                objetivo: objetivo,
+                frequencia: frequencia,
+                restricoes: restricoes,
+                fcAlvo: batimentosAlvo, // NOVO: Guarda o cálculo científico de batimentos cardíacos para o professor
+                data: new Date().toLocaleDateString('pt-BR')
+            };
+
+            historico.unshift(novoItem); // Insere o item sempre no topo da lista
+            localStorage.setItem('historicoProAcademia', JSON.stringify(historico)); // Grava em formato string JSON
+
+            atualizarTelaHistorico(); // Atualiza a lista gráfica do histórico lateral
+        }
+
+        /* Lê os dados e monta a interface aplicando os filtros de busca em tempo real digitados pelo instrutor */
+        function atualizarTelaHistorico() {
+            const lista = document.getElementById('historyList');
+            const historico = JSON.parse(localStorage.getItem('historicoProAcademia')) || [];
+
+            // CAPTURA DOS FILTROS DA INTERFACE: Pega os valores atuais da busca por nome e filtro de objetivo
+            const buscaNome = document.getElementById('buscaNome').value.toLowerCase();
+            const filtroObjetivo = document.getElementById('filtroObjetivo').value;
+
+            lista.innerHTML = ""; // Limpa a interface gráfica da lista anterior
+
+            // NOVO RECURSO FILTRAGEM: Filtra a lista array original com base nas preferências digitadas
+            const historicoFiltrado = historico.filter(item => {
+                const bateNome = item.nome.toLowerCase().includes(buscaNome);
+                const bateObjetivo = (filtroObjetivo === "Todos") || (item.objetivo === filtroObjetivo);
+                return bateNome && bateObjetivo; // Retorna o item apenas se passar nas duas regras de busca
+            });
+
+            if (historicoFiltrado.length === 0) {
+                lista.innerHTML = `<li style="color: var(--text-muted); font-style: italic; font-size: 14px;">Nenhum aluno encontrado com esses filtros.</li>`;
+                return;
+            }
+
+            // Loop que passa de ficha em ficha gerando as linhas estruturadas finais na tela
+            historicoFiltrado.forEach(item => {
+                // Regra de privacidade: Mascara o IMC do histórico caso o botão de ocultação esteja ativado
+                let imcExibido = modoPrivadoAtivo ? "***" : `IMC: ${item.imc}`;
+
+                lista.innerHTML += `
+                <li class="history-item">
+                    <div class="history-header">
+                        <strong>👤 ${item.nome}</strong>
+                        <span style="color: var(--text-muted); font-size: 11px;">${item.data}</span>
+                    </div>
+                    <div class="history-details">
+                        <strong>Dados:</strong> ${item.idade} | Tel: ${item.telefone} <br>
+                        <strong>Status:</strong> ${item.avatar} ${imcExibido} (${item.status}) <br>
+                        <strong>Meta de Treino:</strong> ${item.objetivo} <br>
+                        <strong>Cardio Alvo:</strong> <span style="color: var(--primary); font-weight: 600;">${item.fcAlvo}</span> <br>
+                        <strong>Restrições:</strong> <span style="font-style: italic;">"${item.restricoes}"</span>
+                    </div>
+                </li>
+            `;
+            });
+        }
+
+        /* Apaga todos os registros de fichas de alunos salvos na memória local do navegador */
+        function limparHistorico() {
+            localStorage.removeItem('historicoProAcademia');
+            atualizarTelaHistorico(); // Força a atualização da tela exibindo a frase de lista vazia
+        }
+    </script>
+
+</body>
+
+</html>
